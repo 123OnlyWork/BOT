@@ -1,0 +1,475 @@
+var tutorialX;
+var tutorialY;
+var tutorialPBTimer;
+function showTutorial(location) {
+	var frame=document.getElementById("tutorialdata");
+	if (frame) {
+        console.log("showTutorial:",location);
+		frame.src="/tutorial/text/?location="+location+"&rnd="+Math.round(Math.random()*1000000);
+	}
+	else {
+		alert("no frame");
+	}
+}
+
+function showRegistration(location) {
+    dialog('/user/popupregister');
+}
+
+function showTutorialFromPopup(location) {
+	var div=document.getElementById("popupDiv");
+	if (div && div.style.display!="none") {
+		showTutorial(location);
+	}
+}
+function highlightTutorialControls(highlightData) {
+    // alert("pop "+highlightData);
+    if(highlightData)
+    {
+        var i;
+        for(i=0;i<highlightData.length;i++)
+        {
+            highlightControls(document.getElementById("content"),highlightData[i].split(":")[0],highlightData[i].split(":")[1]);
+            highlightControls(document.getElementById("divmenu"),highlightData[i].split(":")[0],highlightData[i].split(":")[1]);
+            //highlightControls(top.document.getElementById("popupDiv"),highlightData[i].split(":")[0],highlightData[i].split(":")[1]);
+        }
+    }
+}
+
+function highlightControls(element,keyword,controlType) {
+    if (element) {
+        if (element.nodeType == 3&&controlType=="Tab"&&element.parentNode.nodeName=="A") {        // Text node
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+20;
+                arrow.style.left = pos[0]-35;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 3&&controlType=="SubTab"&&element.parentNode.nodeName=="A") {        // Text node
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+40;
+                arrow.style.left = pos[0]-35;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 3&&element.parentNode.nodeName=="SPAN") {        // Text node
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1];
+                arrow.style.left = pos[0]-35;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 3&&controlType=="TableColumn"&&element.parentNode.nodeName=="TD"&&element.parentNode.className=="tblh") {        // Table column
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+45;
+                arrow.style.left = pos[0]-35;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 3&&controlType=="TableColumn"&&element.parentNode.nodeName=="TD"&&element.parentNode.parentNode&&element.parentNode.parentNode.className=="tblhead") {        // Table column
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+35;
+                arrow.style.left = pos[0]-55;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 3&&element.parentNode.nodeName=="A"&&controlType=="simpleLink") {        // Text node
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+25;
+                arrow.style.left = pos[0]-20;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 3&&element.parentNode.nodeName=="SPAN"&&controlType=="inlineButton") {        // inlineButton
+            while (true) {
+                var value = element.nodeValue;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+25;
+                arrow.style.left = pos[0]-20;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="IMG"&&controlType=="popupButton") {        // Text node
+            while (true) {
+                var value = element.title;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+25;
+                arrow.style.left = pos[0]-20;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="IMG"&&controlType=="productLink") {        // Text node
+            while (true) {
+                var value = element.src;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+5;
+                arrow.style.left = pos[0]+5;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="IMG"&&controlType=="imgLink") {        // Text node
+            while (true) {
+                var value = element.src;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+55;
+                arrow.style.left = pos[0]-45;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="IMG"&&controlType=="smallimgLink") {        // Text node
+            while (true) {
+                var value = element.src;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+15;
+                arrow.style.left = pos[0]-55;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="IMG"&& element.id.indexOf("umapdiv")>=0&&controlType=="flash") {        // Text node
+            while (true) {
+                var pos = findPos(element);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top =pos[1]+80 ;
+                arrow.style.left = pos[0]+element.clientWidth/2-110+"px";
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="A"&&controlType=="MenuIcon") {        // Text node
+            while (true) {
+                var value = element.title;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf(keyword.toLowerCase());
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+40;
+                arrow.style.left = pos[0]-40;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else if (element.nodeType == 1 && element.nodeName=="A"&&controlType=="ManagerIcon") {        // Text node
+            while (true) {
+                var value = element.href;  // Search for keyword in text node
+                var idx = value.toLowerCase().indexOf('job/managedinfo');
+                if (idx < 0) break;             // not found, abort
+                var pos = findPos(element.parentNode);
+                var arrow = document.getElementById("tutorialArrow");
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1]+65;
+                arrow.style.left = pos[0]-50;
+                arrow.style.display = "";
+                break;
+            }
+        }
+        else  { // Element node
+            if (element.style!=null&&element.style.display != "none" && element.nodeName.toLowerCase() != 'select') {
+                for (var i=element.childNodes.length-1; i>=0; i--) {
+                    highlightControls(element.childNodes[i],keyword,controlType);
+                }
+            }
+        }
+    }
+}
+function findPos(obj) {
+var curleft = curtop = 0;
+if (obj.offsetParent) {
+	curleft = obj.offsetLeft
+	curtop = obj.offsetTop
+	while (obj = obj.offsetParent) {
+		curleft += obj.offsetLeft
+		curtop += obj.offsetTop
+	}
+}
+return [curleft,curtop];
+}
+
+function tutorialLoaded(text,button,actualLocation) {
+
+    if(text == "" || text == null)
+    {
+        console.log("nullText. actualLocation:",actualLocation);
+        showTutorial(actualLocation);
+        return;
+    }
+	var div=document.getElementById("tutorial");
+	if (div) {
+		var container=div.firstChild.nextSibling;
+		container.innerHTML=text;
+		var btn=document.getElementById("tutorialbtn");
+		if (btn) btn.href=button;
+        if(text.indexOf('hideprocessbutton')>-1)
+        {
+            if (btn) btn.href=button;
+            btn.style.display="none";
+        }
+		//div.style.width=(document.body.clientWidth-120)+"px";
+        //div.style.left="40px";
+		div.style.display="";
+        if(isMobileLayout())
+        {
+            div.style.width="690px";
+            div.style.left=((document.body.clientWidth-690)/2)+"px";
+        }
+        else
+        {
+            div.style.width="800px";
+            div.style.left=((document.body.clientWidth-900)/2)+"px";
+        }
+		var h=Math.round((document.body.clientHeight-div.offsetHeight)/2);
+		if (h<40) h=40;
+        
+        if(text.indexOf('move down')>-1)
+        {
+            h+=200;
+        }
+        if(text.indexOf('movedown50')>-1)
+        {
+            h+=50;
+        }
+        if(text.indexOf('movedown100')>-1)
+        {
+            h+=100;
+        }
+        if(text.indexOf('movetobuttons')>-1)
+        {
+            var btndiv=document.getElementById("content");
+            h = btndiv.offsetTop + btndiv.clientHeight - div.offsetHeight;
+        }
+        if(text.indexOf('moveoverpopupbuttons')>-1)
+        {
+            var btndiv=document.getElementById("popupDiv");
+            h = btndiv.offsetTop + btndiv.clientHeight - div.offsetHeight;
+        }
+        if(text.indexOf('movetopopupbuttons')>-1)
+        {
+            var btndiv=document.getElementById("popupDiv");
+            h = btndiv.offsetTop + btndiv.clientHeight - div.offsetHeight-32;
+        }
+        if(text.indexOf('moveoverbuttons')>-1)
+        {
+            var btndiv=document.getElementById("content");
+            h = btndiv.offsetTop + btndiv.clientHeight - div.offsetHeight + 59;
+        }
+        if(text.indexOf('moveoverregisterbuttons')>-1)
+        {
+            var btndiv=document.getElementById("content");
+            h = btndiv.offsetTop + btndiv.clientHeight - div.offsetHeight + 59 + 110;
+        }
+        if(text.indexOf('moveright50')>-1 && !isMobileLayout()) 
+        {
+             div.style.left=(((document.body.clientWidth-900)/2)+50)+"px";
+        }
+		div.style.top=h+"px";
+	}
+	var frame=document.getElementById("tutorialdata");
+	if (frame) {
+//		frame.src="/empty.html";
+	}
+}
+function tutorialDrag(e) {
+	if (!e) {
+		e=window.event;
+	}
+	if (e.preventDefault) {
+		e.preventDefault();
+	}
+	tutorialX=e.screenX;
+	tutorialY=e.screenY;
+	if (document.addEventListener) {
+		document.addEventListener("mousemove",tutorialMouseMove,false);
+		document.addEventListener("mouseup",tutorialMouseUp,false);
+	}
+	else {
+		document.onmousemove=tutorialMouseMove;
+		document.onmouseup=tutorialMouseUp;
+		document.ondragstart=tutorialNoDrag;
+		document.onselectstart=tutorialNoDrag;
+		var target=event.target?event.target:event.srcElement;
+		if (target) target.ondragstart=tutorialNoDrag;
+ 	}
+}
+function tutorialMouseUp() {
+	if (document.removeEventListener) {
+		document.removeEventListener("mousemove",tutorialMouseMove,false);
+		document.removeEventListener("mouseup",tutorialMouseUp,false);
+	}
+	else {
+		document.onmousemove=null;
+		document.onmouseup=null;
+		document.ondragstart=null;
+ 	}
+}
+
+function tutorialNoDrag(e) {
+	return false;
+}
+function tutorialMouseMove(e) {
+	if (!e) {
+		e=window.event;
+	}
+	var div=document.getElementById("tutorial");
+	if (div) {
+		var dx,dy;
+		dx=e.screenX-tutorialX;
+		dy=e.screenY-tutorialY;
+		div.style.left=(div.offsetLeft+dx)+"px";
+		div.style.top=(div.offsetTop+dy)+"px";
+		tutorialX=e.screenX;
+		tutorialY=e.screenY;
+	}
+	return false;
+}
+function tutorialClose() {
+	var div=document.getElementById("tutorial");
+	if (div) {
+		div.style.display="none";
+	}
+}
+
+function disableTutorialButton()
+{
+    var btn=document.getElementById("tutorialbtn");
+    if(btn){
+        btn.style.opacity = 0.5;
+        btn.href="javascript:void();"
+        btn.className="tbtndis";
+    }
+    
+}
+function tutorialProcess() {
+    var btn = document.getElementById("nextStepButton");
+    if(btn)
+    {
+        btn.style.opacity=0.5;
+        btn.href='javascript: void(0)';
+    }
+
+	var div=document.getElementById("tutorial");
+	if (div) {
+		var container=div.firstChild.nextSibling;
+		container.innerHTML="";
+		var btn=document.getElementById("tutorialbtn");
+		if (btn) btn.style.display="none";
+		var div1=document.getElementById("tutorialproc");
+		if (div1) div1.style.display="";
+		div.style.width="400px";
+		div.style.height="150px";
+		var x=Math.round((document.body.clientWidth-400)/2);
+		div.style.left=x+"px";
+		var h=Math.round((document.body.clientHeight-150)/2);
+		if (h<40) h=40;
+		div.style.top=h+"px";
+		div.style.display="";
+		tutorialPBTimer=window.setInterval("tutorialPB()",50);
+		var frm=document.getElementById("tutorialdata");
+		if (frm) frm.src="/tutorial/process/";
+	}
+}
+function tutorialPB() {
+	var img=document.getElementById("tutorialpb");
+	if (img) {
+		var w=parseInt(img.width)+1;
+		if (w>200) {
+			window.clearInterval(tutorialPBTimer);
+			tutorialPBTimer=null;
+		}
+		img.width=w;
+		img=img.nextSibling;
+		img.width=200-w;
+	}
+}
+function tutorialProcessed(url) {
+	window.location=url;
+}
+function moveArrowToPopupButton()
+{
+                var arrow = window.parent.document.getElementById("tutorialArrow");
+                var popupDiv = window.parent.document.getElementById("popupDiv") 
+                var pos = window.parent.findPos(popupDiv);
+                arrow.style.position = "absolute";
+                arrow.style.top = pos[1] + popupDiv.offsetHeight;
+                arrow.style.left = pos[0]-35;
+                arrow.style.display = "";
+}
+
+function hideTutorialArrow()
+{
+    var arrow = window.parent.document.getElementById("tutorialArrow");
+    if(arrow)
+    {
+        arrow.style.display = "none";
+    }
+}

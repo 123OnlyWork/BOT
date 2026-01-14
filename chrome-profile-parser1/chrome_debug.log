@@ -1,0 +1,27 @@
+[11248:23176:0505/003531.383:INFO:components\enterprise\browser\controller\chrome_browser_cloud_management_controller.cc:202] No machine level policy manager exists.
+[24172:26996:0505/003531.535:ERROR:gpu\ipc\service\gpu_channel_manager.cc:962] Failed to create GLES3 context, fallback to GLES2.
+[24172:26996:0505/003531.536:ERROR:gpu\ipc\service\gpu_channel_manager.cc:973] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[24172:26996:0505/003531.931:ERROR:gpu\ipc\service\gpu_channel_manager.cc:962] Failed to create GLES3 context, fallback to GLES2.
+[24172:26996:0505/003532.011:ERROR:gpu\ipc\service\gpu_channel_manager.cc:973] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[24172:26996:0505/003532.109:ERROR:gpu\ipc\service\gpu_channel_manager.cc:962] Failed to create GLES3 context, fallback to GLES2.
+[24172:26996:0505/003532.137:ERROR:gpu\ipc\service\gpu_channel_manager.cc:973] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[25788:25664:0505/003533.235:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003533.658:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003535.673:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003536.470:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:16172:0505/003537.896:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:808] Attempting to stop aecdump when no audio processing module is present
+[25788:16172:0505/003537.896:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:808] Attempting to stop aecdump when no audio processing module is present
+[25788:25664:0505/003538.564:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003540.736:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003542.658:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003545.080:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003547.085:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003549.023:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003550.754:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003601.744:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003602.431:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003604.345:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003606.211:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003608.442:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[25788:25664:0505/003610.829:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:802] Running WebRTC with a combined Network and Worker thread.
+[11248:23176:0505/003616.822:WARNING:chrome\browser\ui\sad_tab.cc:257] Tab Killed: https://bizmania.ru/

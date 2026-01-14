@@ -1,0 +1,18 @@
+[2692:14288:0114/210556.334:INFO:components\enterprise\browser\controller\chrome_browser_cloud_management_controller.cc:206] No machine level policy manager exists.
+[12940:5848:0114/210556.410:ERROR:gpu\ipc\service\gpu_channel_manager.cc:911] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[2692:2420:0114/210556.613:WARNING:chrome\browser\media\router\discovery\discovery_network_list_win.cc:228] Failed to open WLAN handle: Служба не запущена. (0x426)
+[12940:5848:0114/210556.655:ERROR:gpu\ipc\service\gpu_channel_manager.cc:911] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[12940:5848:0114/210556.671:ERROR:gpu\ipc\service\gpu_channel_manager.cc:911] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[6920:14244:0114/210559.638:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:923] Running WebRTC with a combined Network and Worker thread.
+[6920:14244:0114/210601.979:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:923] Running WebRTC with a combined Network and Worker thread.
+[6920:14244:0114/210604.619:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:923] Running WebRTC with a combined Network and Worker thread.
+[6920:14244:0114/210607.712:INFO:third_party\blink\renderer\modules\peerconnection\peer_connection_dependency_factory.cc:923] Running WebRTC with a combined Network and Worker thread.
+[6920:12380:0114/210608.479:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:808] Attempting to stop aecdump when no audio processing module is present
+[6920:12380:0114/210608.479:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:808] Attempting to stop aecdump when no audio processing module is present
+[6920:12380:0114/210608.479:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:808] Attempting to stop aecdump when no audio processing module is present
+[2692:2476:0114/210626.376:INFO:chrome\browser\extensions\extension_garbage_collector.cc:188] Garbage collection for extensions on file thread is complete.
+[6920:12380:0114/210628.122:WARNING:third_party\webrtc\media\engine\webrtc_voice_engine.cc:808] Attempting to stop aecdump when no audio processing module is present
+[2692:6436:0114/210857.280:ERROR:google_apis\gcm\engine\registration_request.cc:292] Registration response error message: QUOTA_EXCEEDED
+[2692:14288:0114/210858.246:WARNING:chrome\browser\ui\sad_tab.cc:258] Tab Killed: https://bizmania.ru/
+[2692:6436:0114/210908.292:ERROR:google_apis\gcm\engine\connection_factory_impl.cc:483] ConnectionHandler failed with net error: -2
+[2692:14288:0114/210908.293:ERROR:content\browser\network_service_instance_impl.cc:613] Network service crashed or was terminated, restarting service.

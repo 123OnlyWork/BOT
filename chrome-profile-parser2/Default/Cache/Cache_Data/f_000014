@@ -1,0 +1,665 @@
+function shiftBrightness(v,offset) {
+	v+=offset;
+	if (v<0) v=0;
+	if (v>255) v=255;
+	return v;
+}
+function shiftRGBBrightness(rgb,offset) {
+	rgb.r=shiftBrightness(rgb.r,offset);
+	rgb.g=shiftBrightness(rgb.g,offset);
+	rgb.b=shiftBrightness(rgb.b,offset);
+	return rgb;
+}
+function shiftColorBrightness(color,offset) {
+	var rgb=Raphael.getRGB(color);
+	rgb=shiftRGBBrightness(rgb,offset);
+	return "rgb("+rgb.r+","+rgb.g+","+rgb.b+")";
+}
+function PieChart3D(canvas,cx,cy,width,height,thickness,data) {
+	this.canvas=canvas;
+	this.cx=cx;
+	this.cy=cy-thickness/2;
+	this.width=width/2;
+	this.height=(height-thickness)/2;
+	this.thick=thickness;
+	this.data=data;
+	this.slices=[];
+	
+	this.display=function() {
+		var r=Math.PI/4,er,i,p,s,e;
+		var center=this.cx+","+this.cy;
+		var center1=this.cx+","+(this.cy+this.thick);
+		var faces=[];
+		var face;
+		for (i=0;i<data.length;++i) {
+			p=data[i];
+			if (data.length) {
+				p={name:p[0],share:p[1],color:p[2],value:p[3]};
+			}
+			else {
+				p={name:p.name,share:p.share,color:p.color,value:p.value};
+			}
+			if (!p.value) p.value=p.share;
+			if (!p.color) p.color=Raphael.getColor(1);
+			p.wallColor=shiftColorBrightness(p.color,-40);
+			p.title= p.name+" / "+p.value+" ("+Math.round(p.share*1000)/10+"%)";
+
+			if (data.length==1) {
+				s=this.segment(this.point(Math.PI),this.point(Math.PI*2),0);
+				p.wall4=this.drawPath(0,s,p.wallColor,0.5);
+				s=this.segment(this.point(0),this.point(Math.PI),0);
+				p.wall1=this.drawPath(0,s,p.wallColor,0.5);
+				p.arc=this.canvas.ellipse(this.cx,this.cy,this.width,this.height);
+				p.arc.attr({fill:p.color,stroke:"#FFFFFF",opacity:0.7});
+				break;
+			}
+			
+			p.start=this.point(r);
+			er=r+Math.PI*2*p.share;
+			p.centerAngle=r+Math.PI*p.share;
+			p.end=this.point(er);
+			var r1=Math.floor(r/Math.PI);
+			var r2=Math.floor(er/Math.PI);
+			var sin1=Math.sin(r+0.001);
+			var sin2=Math.sin(er-0.001);
+			
+			var f=er-r>Math.PI?1:0;
+			var s="M"+center+"L"+p.start.x+","+p.start.y+"A"+this.width+","+this.height+" 0 "+f+",1 "+p.end.x+","+p.end.y+"z";
+			p.arc=s;
+
+			faces.push(this.createSurface(p,sin1,"M"+center+"L"+center1+"L"+p.start.x+","+(p.start.y+this.thick)+"L"+p.start.x+","+p.start.y+"z"));
+			faces.push(this.createSurface(p,sin2,"M"+center+"L"+center1+"L"+p.end.x+","+(p.end.y+this.thick)+"L"+p.end.x+","+p.end.y+"z"));
+			sin1+=0.0001;
+			sin2+=0.0001;
+
+			if (r1!=r2) {
+				var bp=this.point((r1+1)*Math.PI);
+				bp.x=this.cx+(bp.x<this.cx?-this.width:this.width);
+				bp.y=this.cy;
+				faces.push(this.createSurface(p,sin1,this.segment(p.start,bp,0)));
+				if (r2-r1>1) {
+					var ep=this.point((r1+2)*Math.PI);
+					faces.push(this.createSurface(p,-1,this.segment(bp,ep,0)));
+					faces.push(this.createSurface(p,sin2,this.segment(ep,p.end,0)));
+				}
+				else {
+					faces.push(this.createSurface(p,-1,this.segment(bp,p.end,0)));
+				}
+			}
+			else {
+				faces.push(this.createSurface(p,r1 % 2>=1?-1:Math.max(sin1,sin2),this.segment(p.start,p.end,f)));
+			}
+			p.set=canvas.set();
+			this.slices[i]=p;
+			p.index=i;
+			p.inFunc=function(event){this.chart.selectSlice(this.sliceIndex);};
+			p.outFunc=function(event){this.chart.releaseSlice(this.sliceIndex)};
+			r=er;
+		}
+		faces.sort(this.faceSort);
+		for (i=0;i<faces.length;++i) {
+			p=faces[i].slice;
+			face=this.drawPath(p.index,faces[i].path,p.wallColor,0.7);
+			face.hover(p.inFunc,p.outFunc);
+			p.set.push(face);
+		}
+		for (i=0;i<this.slices.length;++i) {
+			p=this.slices[i];
+			p.arc=this.drawPath(i,p.arc,p.color,0.7);
+			p.arc.hover(p.inFunc,p.outFunc);
+			p.set.push(p.arc);
+			p.set.attr({title:p.title});
+		}
+	}
+	this.createSurface=function(slice,sin,path) {
+		return {slice:slice,sin:sin,path:path};
+	}
+	this.faceSort=function(f1,f2) {
+		if (f1.sin<f2.sin) {
+			return -1;
+		}
+		else if (f1.sin>f2.sin) {
+			return 1;
+		}
+		return 0;
+	}
+	this.point=function(r) {
+		var x=this.cx+Math.cos(r)*this.width;
+		var y=this.cy+Math.sin(r)*this.height;
+		return {x:x,y:y};
+	}
+	this.movePoint=function(r) {
+		var x=Math.cos(r)*20;
+		var y=Math.sin(r)*20/this.width*this.height;
+		return {x:x,y:y};
+	}
+	this.segment=function(start,end,f) {
+		var s="M"+start.x+","+(start.y+this.thick)+"A"+this.width+","+this.height+" 0 "+f+",1 "+end.x+","+(end.y+this.thick);
+		s+="L"+end.x+","+end.y+"A"+this.width+","+this.height+" 0 "+f+",0 "+start.x+","+start.y+"z";
+		return s;
+	}
+	this.drawPath=function(index,path,color,opacity) {
+		var p=this.canvas.path(path);
+		p.attr({fill:color,stroke:"#FFFFFF",opacity:opacity});
+		p.chart=this;
+		p.sliceIndex=index;
+		return p;
+	}
+	this.selectSlice=function(index) {
+		var slice=this.slices[index];
+		if (slice) {
+			var p=this.movePoint(slice.centerAngle);
+			slice.set.animate({translation:[p.x,p.y]},500,">");
+		}
+	}
+	this.releaseSlice=function(index) {
+		var slice=this.slices[index];
+		if (slice) {
+			var p=this.movePoint(slice.centerAngle);
+			slice.set.animate({translation:[-p.x,-p.y]},500,">");
+		}
+		this.hint=null;
+	}
+}
+function LineChart(canvas,x,y,width,height,labels) {
+	this.canvas=canvas;
+	this.width=width;
+	this.height=height;
+	this.x=x;
+	this.y=y;
+	this.maxTickWidth=12;
+	this.scales=[];
+	this.displayScales=false;
+	this.tickColor="#000";
+	this.gridColor=null;
+	this.tickWidth=4;
+	this.labels=labels;
+	
+	this.addLine=function(type,name,scale,color,points,hints) {
+		var seria={name:name,color:color};
+		switch(type) {
+			case "line":
+				seria.strokeWidth=1;
+				seria.markWidth=3;
+				seria.markColor=color;
+				seria.display=function() {
+					if (this.points.length>0) {
+						var p=this.scale.point(0,this.points[0]);
+						var s="M"+p.x+","+p.y;
+						var i;
+						this.marks=[];
+						this.marks[0]=p;
+						for (i=1;i<this.points.length;++i) {
+							var p=this.scale.point(i,this.points[i]);
+							s+="L"+p.x+","+p.y;
+							this.marks[i]=p;
+						}
+						this.path=this.canvas.path(s);
+						this.path.attr({"stroke-width":this.strokeWidth,stroke:this.color,"stroke-linejoin":"round"});
+						this.shadowPath=this.canvas.path(s);
+						this.shadowPath.attr({"stroke-width":this.strokeWidth,stroke:this.color,"stroke-linejoin":"round","opacity":0.1});
+						this.shadowPath.translate(4,4);
+						if (this.markWidth>0) {
+							var r,mark;
+							r=this.markWidth/2;
+							for (i=0;i<this.marks.length;++i) {
+								p=this.marks[i];
+								mark=this.canvas.circle(p.x,p.y,r);
+								mark.attr({fill:this.markColor,cursor:"pointer","stroke-width":0});
+								mark.seria=this;
+								mark.seriaIndex=i;
+								mark.markRadius=r;
+								mark.hover(lineHoverIn,lineHoverOut);
+								this.marks[i]=mark;
+							}
+						}
+					}
+				}
+				break;
+			case "bar":
+				seria.strokeWidth=1;
+				seria.strokeColor=shiftColorBrightness(this.color,-100);
+				seria.opacity=1;
+				seria.width=0.6;
+				seria.display=function(scale) {
+					this.bars=[];
+					var bar,i,r,p,w,h,x,y,x1,y1;
+					w=this.width<1?this.scale.tickWidth*this.width:this.width;
+					p=this.scale.point(0,0);
+					h=p.y;
+					for (i=0;i<this.points.length;++i) {
+						p=this.scale.point(i,this.points[i]);
+						if (this.points[i]<0) {
+							y=h;
+							y1=p.y-h;
+						}
+						else {
+							y=p.y;
+							y1=h-p.y;
+						}
+						var shadow=this.canvas.rect(p.x-w/2,y,w,y1);
+						shadow.translate(2,2);
+						shadow.attr({fill:"#000000","stroke-width":this.strokeWidth,stroke:this.strokeColor,opacity:this.opacity*0.1});
+						bar=this.canvas.rect(p.x-w/2,y,w,y1);
+						bar.attr({fill:this.color,"stroke-width":this.strokeWidth,stroke:this.strokeColor,opacity:this.opacity});
+//						r="M"+(p.x+w/2)+" "+y+"l2 -2"+"l0 "+y1+"l-2 2z";
+//						bar.push(this.canvas.path(r));
+//						r="M"+(p.x-w/2)+" "+y+"l2 -2"+"l"+w+" 0 l-2 2z";
+//						bar.push(this.canvas.path(r));
+						this.bars[i]=bar;
+					}
+					if (this.lowerBars) {
+					}
+					if (this.upperBars) {
+						this.upperBars.attr({fill:this.color,"stroke-width":this.strokeWidth,stroke:this.strokeColor,opacity:this.opacity});
+					}
+				}
+				seria.postprocess=function() {
+					if (this.lowerBars) {
+						this.lowerBars.toBack();
+					}
+				}
+				break;
+			case "area":
+				seria.strokeWidth=1;
+				seria.strokeColor=shiftColorBrightness(this.color,-100);
+				seria.opacity=1;
+				seria.display=function(scale) {
+					this.bars=[];
+					var bar,i,r,p,w,z;
+					p=this.scale.point(0,0);
+					var s="M"+p.x+","+p.y;
+					for (i=0;i<this.points.length;++i) {
+						p=this.scale.point(i,this.points[i]);
+						s+="L"+p.x+","+p.y;
+					}
+					p=this.scale.point(this.points.length-1,0);
+					s+="L"+p.x+","+p.y+"z";
+					this.path=this.canvas.path(s);
+					this.path.attr({fill:this.color,"stroke-width":this.strokeWidth,stroke:this.strokeColor,opacity:this.opacity,"stroke-linejoin":"round"});
+					this.shadowPath=this.canvas.path(s);
+					this.shadowPath.attr({fill:this.color,"stroke-width":this.strokeWidth,stroke:this.strokeColor,opacity:this.opacity*0.05,"stroke-linejoin":"round"});
+					this.shadowPath.translate(2,-3);
+				}
+				break;
+			default: return;
+		}
+		seria.points=points;
+		seria.hints=hints;
+		var i;
+		for (i=0;i<this.scales.length;++i) {
+			if (this.scales[i].name==scale) {
+				this.scales[i].addSeria(seria);
+				return seria;
+			}
+		}
+		scale=this.addScale(scale);
+		scale.addSeria(seria);
+		return seria;
+	}
+	this.addScale=function(name,top,height,prefix,suffix,minVal,maxVal) {
+		if (top==null) top=0;
+		if (height==null) height=100;
+		var scale={name:name,top:this.y+this.height*top/100,height:this.height*height/100};
+		scale.chart=this;
+		scale.visible=true;
+		scale.prefix=prefix?prefix:"";
+		scale.suffix=suffix?suffix:"";
+		if (name=="left" || name=="right") {
+			scale.align=name;
+		}
+		else {
+			if (this.rightScale) {
+				scale.align="left";
+			}
+			else {
+				scale.align="right";
+			}
+		}
+		scale.series=[];
+		scale.addSeria=function(seria) {
+			this.series.push(seria);
+			seria.scale=this;
+			seria.canvas=this.chart.canvas;
+		}
+		scale.calculateRange=function() {
+			this.width=0;
+			this.scaleWidth=0;
+			if (this.series.length<1) {
+				this.visible=false;
+				return;
+			}
+			var i,seria,minv,maxv,p,v;
+			for (i=0;i<this.series.length;++i) {
+				seria=this.series[i];
+				if (seria.points.length>0) {
+					if (this.width<seria.points.length) {
+						this.width=seria.points.length;
+					}
+					for (p=0;p<seria.points.length;++p) {
+						v=seria.points[p];
+						if (p) {
+							if (minv>v) minv=v;
+							if (maxv<v) maxv=v;
+						}
+						else {
+							minv=v;
+							maxv=v;
+						}
+					}
+					if (i) {
+						if (this.minValue>minv) this.minValue=minv;
+						if (this.maxValue<maxv) this.maxValue=maxv;
+					}
+					else {
+						this.minValue=minv;
+						this.maxValue=maxv;
+					}
+				}
+			}
+			if(minVal)
+			{
+				this.minValue=minVal;
+			}
+			if(maxVal)
+			{
+				this.maxValue=maxVal;
+			}
+		}
+		scale.calculateScale=function() {
+			var r=this.maxValue-this.minValue;
+			if (this.visible && r>0) {
+				var l=Math.log(r)/Math.log(10);
+				var rl=Math.floor(l);
+				if (l==rl) --rl;
+				var step=Math.pow(10,rl);
+				var min,max,ticks;
+				for (i=0;i<100;++i) {
+					min=Math.floor(this.minValue/step)*step;
+					max=Math.floor(this.maxValue/step)*step;
+					if (max<this.maxValue) max+=step;
+					ticks=(max-min)/step;
+					if (ticks>this.chart.scaleMaxTicks) {
+						step*=2;
+					}
+					else if (ticks<Math.floor(this.chart.scaleMaxTicks/2)) {
+						step/=2;
+					}
+					else break;
+				}
+				//this.minValue=min;
+				//this.maxValue=max;
+				var tickHeight=this.chart.chartAreaHeight/ticks;
+				this.ticks=[];
+				var i,s,j,v;
+				var x=this.chart.textWidth/2;
+				var y=this.chart.chartAreaHeight-(tickHeight-this.chart.textHeight)/2;
+				var minw=0,w,text;
+				min+=step;
+				var tw=[];
+				rl=Math.pow(10,-rl+1);
+				for (i=0;min<max;min+=step) {
+					v=Math.abs(min);
+					r=1000;
+					for (j=0;v>=r;++j) {
+						r*=1000;
+					}
+					if (j>0) {
+						v/=Math.pow(10,j*3);
+						v=Math.floor(v*100)/100;
+						s=v+" "+numerics[j-1];
+						if (min<0) s="-"+s;
+					}
+					else {
+						s=Math.floor(min*rl)/rl;
+					}
+					y=this.point(0,min).y;
+					if (y>=this.chart.y && y+this.chart.textHeight<this.chart.y+this.chart.chartAreaHeight) {
+						text=this.chart.canvas.text(x,y,this.prefix+s+this.suffix);
+						text.attr(this.chart.fontAttr);
+						w=text.getBBox().width;
+						tw[i]=w;
+						if (w>minw) minw=w;
+						this.ticks[i]={text:text,y:y};
+						++i;
+					}
+					y-=tickHeight;
+				}
+				this.scaleWidth=minw+x+this.chart.textWidth+this.chart.tickWidth;
+				var x1,line;
+				if (this.align=="right") {
+					x=this.chart.x+this.chart.width-minw-this.chart.tickWidth;
+					x1=this.chart.x+this.chart.width-this.scaleWidth;;
+				}
+				else {
+					x+=this.chart.x;
+					x1=this.chart.x+this.scaleWidth;
+				}
+				s="M"+x1+" "+this.chart.y+"v"+this.chart.chartAreaHeight;
+				line=this.chart.canvas.path(s);
+				line.attr({"stroke":this.chart.tickColor,"stroke-width":0.5});
+				this.vertLine=line;
+				if (this.align=="left") {
+					x1-=this.chart.tickWidth;
+				}
+				for (i=0;i<this.ticks.length;++i) {
+					this.ticks[i].text.attr({x:(x+minw-tw[i])});
+					s="M"+x1+" "+this.ticks[i].y+"h"+this.chart.tickWidth;
+					line=this.chart.canvas.path(s);
+					line.attr({"stroke":this.chart.tickColor,"stroke-width":0.5});
+					this.ticks[i].tick=line;
+				}
+			}
+			else {
+				this.visible=false;
+			}
+		}
+		scale.display=function() {
+			var p=this.point(0,0);
+			this.tickWidth=this.width>0?this.chart.chartAreaWidth/this.width:0;
+			if (this.tickWidth>this.chart.maxTickWidth) this.tickWidth=this.chart.maxTickWidth;
+			var i;
+			for (i=0;i<this.series.length;++i) {
+				this.series[i].display();
+			}
+		}
+		scale.postprocess=function() {
+			var i,seria;
+			for (i=0;i<this.series.length;++i) {
+				seria=this.series[i];
+				if (seria.postprocess) seria.postprocess();
+			}
+		}
+		scale.displayGrid=function() {
+			if (this.ticks) {
+				var i,s,line;
+				var x=this.chart.x+this.chart.indent;
+				for (i=0;i<this.ticks.length;++i) {
+					y=this.ticks[i].y;
+					s="M"+x+" "+y+"h"+(this.chart.chartAreaWidth);
+					line=this.chart.canvas.path(s);
+					line.attr({"stroke-width":0.5,"stroke":this.chart.gridColor});
+					this.ticks[i].grid=line;
+				}
+			}
+		}
+		scale.point=function(index,value) {
+			var y;
+			if (this.minValue==this.maxValue) {
+				y=Math.round(this.chart.chartAreaHeight/2);
+			}
+			else {
+				y=Math.round((1-(value-this.minValue)/(this.maxValue-this.minValue))*this.chart.chartAreaHeight);
+			}
+			y+=this.top;
+			var x=this.chart.x+Math.round((index+0.5)*this.tickWidth)+this.chart.indent;
+			return {x:x,y:y};
+		}
+		this.scales.push(scale);
+		return scale;
+	}
+	this.display=function() {
+		this.chartAreaWidth=this.width;
+		this.chartAreaHeight=this.height;
+		this.indent=0;
+		var i=0,scale;
+		var labelHeight=0;
+		if (this.displayScales) {
+			var text=this.canvas.text(30,30,"0");
+			text.attr(this.fontAttr);
+			var b=text.getBBox();
+			this.textWidth=b.width;
+			this.textHeight=b.height;
+			text.remove();
+			
+			if (this.labels) {
+				this.ticks=[];
+				var h=0;
+				for (i=0;i<this.labels.length;++i) {
+					text=this.canvas.text(0,0,this.labels[i]);
+					text.attr(this.fontAttr);
+					text.rotate(-90);
+					b=text.getBBox();
+					if (b.width>h) h=b.width;
+					this.ticks[i]={text:text,height:b.width};
+				}
+				labelHeight=h;
+				this.chartAreaHeight-=h+this.tickWidth*2;
+			}
+		}
+		var crossZero=false;
+		var min=0,max=0,size=0;
+		for (i=0;i<this.scales.length;++i) {
+			scale=this.scales[i];
+			scale.calculateRange();
+			if (scale.minValue<=0) min=1;
+			if (scale.maxValue>=0) max=1;
+			switch(scale.align) {
+				case "left": this.leftScale=scale; break;
+				case "right": this.rightScale=scale; break;
+			}
+			if (scale.width>size) size=scale.width;
+		}
+		if (min && max) {
+			crossZero=true;
+		}
+		if (crossZero) {
+			var r,z;
+			min=Math.NaN;
+			max=Math.NaN;
+			for (i=0;i<this.scales.length;++i) {
+				scale=this.scales[i];
+				if (scale.maxValue-scale.minValue>0) {
+					if (scale.minValue<0) {
+						if (scale.maxValue>=0) {
+							z=-scale.minValue/(scale.maxValue-scale.minValue);
+						}
+						else z=1;
+					}
+					else z=0;
+					if (min==Math.NaN || min>z) min=z;
+					if (max==Math.NaN ||max<z) max=z;
+				}
+			}
+			if (min==Math.NaN) {
+				min=0.5;
+			}
+			else {
+				min=(min+max)/2;
+			}
+			for (i=0;i<this.scales.length;++i) {
+				scale=this.scales[i];
+				if (scale.minValue<0) {
+					if (scale.maxValue>=0) {
+						z=-scale.minValue/(scale.maxValue-scale.minValue);
+					}
+					else z=1;
+				}
+				else z=0;
+				if (scale.maxValue-scale.minValue>0) {
+					if (z<min) {
+						scale.minValue=scale.maxValue*min/(min-1);
+					}
+					if (z>min) {
+						scale.maxValue=scale.minValue*(min-1)/min;
+					}
+				}
+				else {
+					scale.minValue=-1;
+					scale.maxValue=(1-min)/min;
+				}
+			}
+		}
+		if (this.displayScales) {
+			this.scaleMaxTicks=Math.round(this.chartAreaHeight/this.textHeight/2);
+			for (i=0;i<this.scales.length;++i) {
+				this.scales[i].calculateScale();
+			}
+			if (this.leftScale) {
+				this.indent=this.leftScale.scaleWidth+this.tickWidth;
+				this.chartAreaWidth-=this.leftScale.scaleWidth+this.tickWidth;
+			}
+			if (this.rightScale) {
+				this.chartAreaWidth-=this.rightScale.scaleWidth+this.tickWidth;
+			}
+			if (this.gridColor && this.scales.length>0) {
+				var scale;
+				for (i=0;i<this.scales.length;++i) {
+					if (this.scales[i].visible) {
+						scale=this.scales[i];
+						break;
+					}
+				}
+				if (scale) {
+					scale.displayGrid();
+					var p=scale.point(0,0);
+					var s="M"+(this.x+this.indent)+" "+p.y+"h"+this.chartAreaWidth;
+					this.zeroLine=this.canvas.path(s);
+					this.zeroLine.attr({"stroke":this.tickColor,"stroke-width":0.5});
+				}
+			}
+		}
+		var tickWidth=size>0?this.chartAreaWidth/size:0;
+		if (tickWidth>this.maxTickWidth) tickWidth=this.maxTickWidth;
+		
+		if (this.ticks) {
+			var s="M"+(this.x+this.indent-this.tickWidth)+","+(this.y+this.chartAreaHeight)+"h"+(this.chartAreaWidth+this.tickWidth*2);
+			this.labelLine=this.canvas.path(s);
+			this.labelLine.attr({"stroke":this.tickColor,"stroke-width":0.5});
+			var x=this.x+this.indent-tickWidth/2+tickWidth*size;
+			var y=this.y+this.chartAreaHeight+this.tickWidth*2;
+			lw=this.textHeight*2;
+			w=0;
+			for (i=this.ticks.length-1;i>=0;--i) {
+				if (w<lw && i<this.ticks.length-1) {
+					this.ticks[i].text.remove();
+				}
+				else {
+					this.ticks[i].text.attr({x:x-this.ticks[i].height/2,y:y+this.ticks[i].height/2});
+					w=0;
+				}
+				s="M"+x+","+(y-this.tickWidth)+"v"+(-this.tickWidth);
+				this.ticks[i].tick=this.canvas.path(s);
+				this.ticks[i].tick.attr({"stroke":this.tickColor,"stroke-width":0.5});
+				x-=tickWidth;
+				w+=tickWidth;
+			}
+		}
+		for (i=0;i<this.scales.length;++i) {
+			this.scales[i].display();
+		}
+		for (i=0;i<this.scales.length;++i) {
+			this.scales[i].postprocess();
+		}
+	}
+	this.setFont=function(font,size,weight,color) {
+		this.fontAttr={"font-family":font,"font-size":size,"font-weight":weight,"fill":color,"text-anchor":"start"};
+	}
+	this.setFont("Arial",9,500,"#000");
+}
+function lineHoverIn(event) {
+	this.animate({r:this.markRadius*1.5},100,">");
+}
+function lineHoverOut(event) {
+	this.animate({r:this.markRadius},100,">");
+}
